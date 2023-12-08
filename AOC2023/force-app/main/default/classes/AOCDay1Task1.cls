@@ -1,4 +1,10 @@
 public class AOCDay1Task1 {
+
+    public class MatchResult {
+        public Integer theIndex { get; set; }
+        public Integer theNumber { get; set; }
+    }
+
     public static Integer processStrings(Id inputContentDocId) {
 
         List<String> inputLines = readLinesFromDocument(inputContentDocId);
@@ -19,52 +25,118 @@ public class AOCDay1Task1 {
         
         return theKingInt;
     }
-    
-    private static String getTwoDigitNumber(String input) {
-        String firstCharacter = input.substring(0, 1);
-        String lastCharacter = input.substring(Math.max(input.length() - 1, 0));
-        
-        return firstCharacter + lastCharacter;
-    }
 
+    /**
+     * Need to refactor this to take into account string values 'one', 'two', 'three', etc.
+     */
     public static Integer findFirstAndLastNumbers(String inputString) {
         Integer firstNumberIndex = -1;
         String theFirstNumber;
         Integer lastNumberIndex = -1;
         String theLastNumber;
 
+        String theFinalNumber;
+        String theBeginningNumber;
+
+        // Regex pattern match to all possible number strings 1-9, return the indexes of first and last numbers
+        List<MatchResult> regexMatches = findPatternIndices(inputString);
+
+        System.debug(regexMatches);
+
+        // Process the string to get first and last integer indicies
         for (Integer i = 0; i < inputString.length(); i++) {
             if (inputString.substring(i, i+1).isNumeric()) {
                 if (firstNumberIndex == -1) {
                     // Found the first number
                     firstNumberIndex = i;
-                    theFirstNumber = inputString.substring(i, i+1);
-
+                    MatchResult numberStats = new MatchResult();
+                    numberStats.theIndex = i;
+                    numberStats.theNumber = Integer.valueOf(inputString.substring(i, i+1));
+                    regexMatches.add(numberStats);
                 }
                 // Update the last number index in each iteration
                 lastNumberIndex = i;
-                theLastNumber = inputString.substring(i, i+1);
+                MatchResult numberStats = new MatchResult();
+                numberStats.theIndex = i;
+                numberStats.theNumber = Integer.valueOf(inputString.substring(i, i+1));
+                regexMatches.add(numberStats);
             }
         }
 
+        System.debug(regexMatches);
 
-        if (firstNumberIndex != -1 && lastNumberIndex != -1) {
-            System.debug('First number found at index: ' + firstNumberIndex);
-            System.debug('First number is: ' + theFirstNumber);
+        Integer theLargestIndex = 0;
+        Integer theSmallestIndex = 1000;
 
-            System.debug('Last number found at index: ' + lastNumberIndex);
-            System.debug('Last number is: ' + theLastNumber);
-        } else {
-            System.debug('No numbers found in the input string.');
+        for (MatchResult regexIndex :regexMatches) {
+            if (regexIndex.theIndex > theLargestIndex) {
+                theLargestIndex = regexIndex.theIndex;
+            }
+
+            if (regexIndex.theIndex < theSmallestIndex) {
+                theSmallestIndex = regexIndex.theIndex;
+            }
         }
 
-        String theConcatNumber = theFirstNumber + theLastNumber;
+        for (MatchResult theMatch :regexMatches) {
+            if (theMatch.theIndex == theSmallestIndex) {
+                theBeginningNumber = String.valueOf(theMatch.theNumber);
+            }
+            if (theMatch.theIndex == theLargestIndex) {
+                theFinalNumber = String.valueOf(theMatch.theNumber);
+            }
+        }
+
+        System.debug('First number found at index: ' + theSmallestIndex);
+        System.debug('First number is: ' + theBeginningNumber);
+
+        System.debug('Last number found at index: ' + theLargestIndex);
+        System.debug('Last number is: ' + theFinalNumber);
+
+
+        String theConcatNumber = theBeginningNumber + theFinalNumber;
 
         Integer theReturnNumber = Integer.valueOf(theConcatNumber);
 
         System.debug('The total number is: ' + theReturnNumber);
 
         return theReturnNumber;
+    }
+
+    public static List<MatchResult> findPatternIndices(String input) {
+        // Create a pattern with the specified words
+        //String pattern = '(one|two|three|four|five|six|seven|eight|nine)';
+        Pattern regex = Pattern.compile('(one|two|three|four|five|six|seven|eight|nine)');
+
+        // Create a matcher
+        Matcher matcher = regex.matcher(input);
+
+        List<MatchResult> results = new List<MatchResult>();
+
+        // Find all matches
+        while (matcher.find()) {
+            MatchResult result = new MatchResult();
+            result.theIndex = matcher.start();
+            result.theNumber = wordToNumber(matcher.group());
+            results.add(result);
+        }
+
+        return results;
+    }
+
+    private static Integer wordToNumber(String word) {
+        switch on word.toLowerCase() {
+            when 'one' { return 1; }
+            when 'two' { return 2; }
+            when 'three' { return 3; }
+            when 'four' { return 4; }
+            when 'five' { return 5; }
+            when 'six' { return 6; }
+            when 'seven' { return 7; }
+            when 'eight' { return 8; }
+            when 'nine' { return 9; }
+            when else { return null; }
+        }
     }
 
     public static List<String> readLinesFromDocument(String contentDocumentId) {
