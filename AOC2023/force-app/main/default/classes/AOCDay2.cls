@@ -12,6 +12,7 @@ public with sharing class AOCDay2 {
         Integer numOfBlueCubes = 14;
         Boolean countGame = true;
         Integer theTotal = 0;
+        Integer totalPower = 0;
 
         List<String> inputStrings = readLinesFromDocument(theContentDocId);
         //String string1 = 'Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green'; // Possible 
@@ -33,34 +34,51 @@ public with sharing class AOCDay2 {
             // For each Game 'theString' - we want to find the minimum values of red, green, and blue cubes across all draws
 
 
-            countGame = true;
+            //countGame = true;
             // Split the string by : to seperate the game number from the number of cubes
             List<String> splitString = theString.split(':');
             // Check the second string in the list for any colour numbers greater than the limiting number - if found ignore, if not take the number from the first string to add
             List<MatchResult> theColourDetails = findPatternIndices(splitString[1]);
 
             // Keep track of the smallest numbers for each colour
-            Integer smallestRedNumber = 10000;
-            Integer smallestGreenNumber = 10000;
-            Integer smallestBlueNumber = 10000;
+            Integer smallestRedNumber = 0;
+            Integer smallestGreenNumber = 0;
+            Integer smallestBlueNumber = 0;
 
             // Check whether our details exceed the limits
             for (MatchResult theMatches : theColourDetails) {
                 System.debug(theMatches.theColour);
                 System.debug(theMatches.theNumber);
-                if (theMatches.theColour == 'red' && theMatches.theNumber > numOfRedCubes) {
-                    countGame = false;
-                } else if (theMatches.theColour == 'blue' && theMatches.theNumber > numOfBlueCubes) {
-                    countGame = false;
-                } else if (theMatches.theColour == 'green' && theMatches.theNumber > numOfGreenCubes) {
-                    countGame = false;
+                if (theMatches.theColour == 'red' && theMatches.theNumber > smallestRedNumber) {
+                    smallestRedNumber = theMatches.theNumber;
+                    //countGame = false;
+                } else if (theMatches.theColour == 'blue' && theMatches.theNumber > smallestBlueNumber) {
+                    smallestBlueNumber = theMatches.theNumber;
+                    //countGame = false;
+                } else if (theMatches.theColour == 'green' && theMatches.theNumber > smallestGreenNumber) {
+                    smallestGreenNumber = theMatches.theNumber;
+                    //countGame = false;
                 }
             }
 
-            if (countGame) {
-                theTotal = theTotal + extractNumber(splitString[0]);
-            }
-            System.debug('The total is now: ' + theTotal);
+            System.debug('The smallest number of reds is: ' + smallestRedNumber);
+            System.debug('The smallest number of greens is: ' + smallestGreenNumber);
+            System.debug('The smallest number of blues is: ' + smallestBlueNumber);
+
+            Integer gamePower = smallestRedNumber*smallestBlueNumber*smallestGreenNumber;
+
+            System.debug('The Game power is: ' + gamePower);
+
+            totalPower = totalPower + gamePower;
+
+            System.debug('The total power is rising! Now at: ' + totalPower);
+
+
+
+            //if (countGame) {
+            //    theTotal = theTotal + extractNumber(splitString[0]);
+            //}
+            //System.debug('The total is now: ' + theTotal);
         }
     }
 
