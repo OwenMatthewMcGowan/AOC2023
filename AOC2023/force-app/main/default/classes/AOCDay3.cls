@@ -25,7 +25,8 @@ public with sharing class AOCDay3 {
             totalMatchedNumbers.put(theYCount, theMatchedNumbers);
 
             // Extract all special characters
-            List<MatchResult> theMatchedChars = extractSpecialChars(theString, theYCount);
+            //List<MatchResult> theMatchedChars = extractSpecialChars(theString, theYCount);
+            List<MatchResult> theMatchedChars = extractStars(theString, theYCount);
             totalMatchedChars.put(theYCount, theMatchedChars);
 
             theYCount++;
@@ -36,8 +37,73 @@ public with sharing class AOCDay3 {
 
         // Work out which numeric values to count
         for (Integer i = 0; i < inputStrings.size(); i++) {
-        
-            for (MatchResult theNumbers : totalMatchedNumbers.get(i)) {
+
+            // Doing similar to the below commented code - but this time we search only for * special characters and search for 2 numbers around them to identify the gears
+            for (MatchResult theStars : totalMatchedChars.get(i)) {
+                List<MatchResult> surroundingNumbersList = new List<MatchResult>();
+
+                if (i == 0) {
+                    // On the first row, therefore only check this row or one below
+                    List<MatchResult> relevantNums = new List<MatchResult>();
+                    if (totalMatchedNumbers.get(i) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i));
+                    }
+                    if (totalMatchedNumbers.get(i+1) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i+1));
+                    }
+                    for (MatchResult theRelevantNums : relevantNums) {
+                        if (theRelevantNums.theXAxisEnd >= theStars.theXAxisStart -1 && theRelevantNums.theXAxisStart <= theStars.theXAxisEnd + 1) {
+                            surroundingNumbersList.add(theRelevantNums);
+                            //countNumber = true;
+                        }
+                    }
+                } else if (i == inputStrings.size()) {
+                    // On the last row, therefore only check this row or one above
+                    List<MatchResult> relevantNums = new List<MatchResult>();
+                    if (totalMatchedNumbers.get(i-1) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i-1));
+                    }
+                    if (totalMatchedNumbers.get(i) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i));
+                    }
+                    for (MatchResult theRelevantNums : relevantNums) {
+                        if (theRelevantNums.theXAxisEnd >= theStars.theXAxisStart -1 && theRelevantNums.theXAxisStart <= theStars.theXAxisEnd + 1) {
+                            surroundingNumbersList.add(theRelevantNums);
+                            //countNumber = true;
+                        }
+                    }
+                } else {
+                    // On a middle row, so we check one above and below
+                    List<MatchResult> relevantNums = new List<MatchResult>();
+                    if (totalMatchedNumbers.get(i-1) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i-1));
+                    }
+                    if (totalMatchedNumbers.get(i) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i));
+                    }
+                    if (totalMatchedNumbers.get(i+1) != null) {
+                        relevantNums.addAll(totalMatchedNumbers.get(i+1));
+                    }
+                    for (MatchResult theRelevantNums : relevantNums) {
+                        if (theRelevantNums.theXAxisEnd >= theStars.theXAxisStart -1 && theRelevantNums.theXAxisStart <= theStars.theXAxisEnd + 1) {
+                            surroundingNumbersList.add(theRelevantNums);
+                            //countNumber = true;
+                        }
+                    }
+                }
+
+                if (surroundingNumbersList.size() == 2) {
+                    List<Integer> theGearRatioValues = new List<Integer>();
+                    for (MatchResult theNumber : surroundingNumbersList) {
+                        theGearRatioValues.add(Integer.valueOf(theNumber.theValue));
+                    }
+                    countedNumbers.add(String.valueOf(theGearRatioValues[0]*theGearRatioValues[1]));
+                }
+            }
+        }
+
+            /**
+              for (MatchResult theNumbers : totalMatchedNumbers.get(i)) {
                 Boolean countNumber = false;
                 if (i == 0) {
                     // On the first row, therefore only check this row or one below
@@ -90,7 +156,7 @@ public with sharing class AOCDay3 {
                     countedNumbers.add(theNumbers.theValue);
                 }
             }
-        }
+             */
 
         // Sum them up
         extractNumber(countedNumbers);
@@ -162,6 +228,34 @@ public with sharing class AOCDay3 {
         for (Integer i = 0; i < inputString.length(); i++) {
             if (!inputString.substring(i, i+1).isNumeric() && !inputString.substring(i, i+1).equals('.')) {
                 String theType = 'character';
+                String theValue = inputString.substring(i, i+1);
+                Integer theYAxis = yAxisCount;
+                Integer theXAxisStart = i;
+                Integer theXAxisEnd = i;
+
+                MatchResult characterInfo = new MatchResult();
+                characterInfo.theType = theType; 
+                characterInfo.theValue = theValue;
+                characterInfo.theYAxis = theYAxis;
+                characterInfo.theXAxisStart = theXAxisStart;
+                characterInfo.theXAxisEnd = theXAxisEnd;
+                System.debug(characterInfo);
+                characters.add(characterInfo);
+            }
+        }
+
+        return characters;
+    }
+
+    /**
+     * Extracts * characters
+     */
+    public static List<MatchResult> extractStars(String inputString, Integer yAxisCount) {
+        List<MatchResult> characters = new List<MatchResult>();
+
+        for (Integer i = 0; i < inputString.length(); i++) {
+            if (inputString.substring(i, i+1).equals('*')) {
+                String theType = 'star';
                 String theValue = inputString.substring(i, i+1);
                 Integer theYAxis = yAxisCount;
                 Integer theXAxisStart = i;
